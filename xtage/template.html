@@ -1,0 +1,77 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Recommendation Platform</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Book Recommendation Platform</h1>
+    <h2>Search Books</h2>
+    <input type="text" id="search-input" placeholder="Search for books...">
+    <div id="suggestions"></div>
+
+    <h2>Submit a Recommendation</h2>
+    <form id="recommendation-form">
+        <input type="text" name="title" placeholder="Title" required>
+        <input type="text" name="author" placeholder="Author" required>
+        <textarea name="description" placeholder="Description" required></textarea>
+        <input type="url" name="cover_image" placeholder="Cover Image URL" required>
+        <input type="number" name="rating" placeholder="Rating" step="0.1" min="0" max="5" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <h2>Recommendations</h2>
+    <div id="recommendations"></div>
+
+    <script>
+        $(document).ready(function() {
+            // Search books
+            $('#search-input').on('input', function() {
+                let query = $(this).val();
+                $.ajax({
+                    url: `/api/search?query=${query}`,
+                    method: 'GET',
+                    success: function(data) {
+                        $('#suggestions').empty();
+                        data.items.forEach(function(book) {
+                            $('#suggestions').append(`<div>${book.volumeInfo.title}</div>`);
+                        });
+                    }
+                });
+            });
+
+            // Submit recommendation
+            $('#recommendation-form').on('submit', function(event) {
+                event.preventDefault();
+                let formData = $(this).serialize();
+                $.ajax({
+                    url: '/api/recommendations',
+                    method: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        alert('Recommendation submitted successfully!');
+                        fetchRecommendations();
+                    }
+                });
+            });
+
+            // Fetch recommendations
+            function fetchRecommendations() {
+                $.ajax({
+                    url: '/api/recommendations',
+                    method: 'GET',
+                    success: function(data) {
+                        $('#recommendations').empty();
+                        data.forEach(function(rec) {
+                            $('#recommendations').append(`<div>${rec.title} by ${rec.author}</div>`);
+                        });
+                    }
+                });
+            }
+
+            fetchRecommendations();
+        });
+    </script>
+</body>
+</html>
